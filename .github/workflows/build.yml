@@ -1,0 +1,28 @@
+name: Build VPK
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: vitasdk/vitasdk:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unpack project zip
+        run: |
+          apk add --no-cache unzip 2>/dev/null || (apt-get update && apt-get install -y unzip) || true
+          rm -rf project
+          mkdir project
+          unzip -q WildGrass.zip -d project
+      - name: Build
+        run: |
+          cd project
+          mkdir build && cd build
+          cmake ..
+          make -j2
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wildgrass-vpk
+          path: project/build/wildgrass.vpk
